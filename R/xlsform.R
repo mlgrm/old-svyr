@@ -11,8 +11,13 @@ qtypes <- c(
   "dateTime"
   )
 
+#' create an xlsform from a simplified form specification
+#'
+#' \code{complete.xlsform} takes a data.frame in a special human readable
+#' format and converts it to a legal xlsform, creating the choice sheet in the
+#' process.
 complete.xlsform <- function(df){
-  qrows <- which(!is.na(df[,grep("^label",colnames(df))[1]]) & 
+  qrows <- which(!is.na(df[,grep("^label",colnames(df))[1]]) &
                    (df$"question type" %in% qtypes))
   df$type <- as.character(df$type)
   df$name <- as.character(df$name)
