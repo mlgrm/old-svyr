@@ -1,0 +1,15 @@
+Package: svyr
+Title: tools for creating and analysing odk-compatible surveys in R
+Version: 0.1
+Authors@R: "O Milgrim <mlgrm@bigend.org> [aut, cre]"
+Description: This package will include tools for creating odk surveys (in
+    xlsform or xform), fetching collected data, and converting it into a useful
+    native format.  The principal classes are the svy (a data.frame with extra
+    attributes and methods), and the svq (survey question), a vector or matrix
+    with survey responses stored as columns of the svy.  There are methods and
+    functions for manipulating and performing simple analyses, and others for
+    exporting results in formats compatible with other software (xls, spss,
+    google docs, word, etc).
+Depends: R (>= 3.1.3)
+License: GPL-2
+LazyData: true
