@@ -1,5 +1,5 @@
 library(foreign)
-library(miceadds)
+# library(miceadds)
 write.spss <- function(x,...) UseMethod("write.spss")
 
 write.spss.svy <- function(x,dat,sps=sub("\\.[A-z0-9]+$",".sps",dat),

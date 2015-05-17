@@ -1,31 +1,59 @@
 library(xlsx)
+library(RGoogleDocs)
 
-qtypes <- c(
-  "select_one",
-  "select_multiple",
-  "text",
-  "integer",
-  "decimal",
-  "date",
-  "time",
-  "dateTime"
-  )
 
 #' create an xlsform from a simplified form specification
 #'
 #' \code{complete.xlsform} takes a data.frame in a special human readable
 #' format and converts it to a legal xlsform, creating the choice sheet in the
 #' process.
-complete.xlsform <- function(df){
-  qrows <- which(!is.na(df[,grep("^label",colnames(df))[1]]) &
-                   (df$"question type" %in% qtypes))
+#'
+#' @param df a data.frame or \code{GoogleWorksheetRef} object
+#' @return a list of two data frames with the contents of the survey and choices
+#' sheets in an xlsform
+makeXLSForm <- function(df, to=NULL){
+  if(is(df,"GoogleWorksheetRef")) return(
+    makeXLSForm(as.data.frame(df,header=TRUE,trim=FALSE,
+                              stringsAsFactors = FALSE)))
+
+  # factors to strings
+  fs <- sapply(df, is.factor)
+  df[fs] <- lapply(df[fs], as.character)
+  # these types are considered questions
+  qtypes <- c(
+    "select_one",
+    "select_multi",
+    "text",
+    "integer",
+    "decimal",
+    "date",
+    "time",
+    "dateTime"
+  )
+  # entry rows are those with a non-empty "question type"
+  erows <- which(!is.na(df$`question type`))
+
+  # question rows are those with non-empty values in the first "label*" column
+  # and valid question types in the "question type" column
+  qrows <- which(!is.na(df[,grep("^label(::[A-z0-9]+|)$",colnames(df))[1]]) &
+                   (df$`question type` %in% qtypes))
   df$type <- as.character(df$type)
   df$name <- as.character(df$name)
+  df$cN <- as.character(df$cN)
+
+  # questions are named Q{1-N}
   df$name[qrows] <- paste0("Q",1:length(qrows))
-  df$type <- as.character(df$"question type")
+  df$type <- as.character(df$`question type`)
+
+  # non question or group types are named X{1-M}
+  xrows <- erows[!(erows %in% qrows)]
+  xrows <- xrows[grep("^(begin|end)\\s",df$`question type`[xrows],invert=TRUE)]
+  df$name[xrows] <- paste0("X",1:length(xrows))
+
+  # extract choices for each "select_*" question
   chgrps <- mapply(function(r,l)
-    if(grepl("^select_", df$type[r])) .getgrp(df,r+1,l-1) else NULL,
-    qrows,c(diff(qrows),nrow(df)-qrows[length(qrows)]))
+    if(grepl("^select_", df$type[r])) .getgrp(df,r) else NULL,
+    qrows)
   for(i in 1:length(qrows)){
     if(is.null(chgrps[[i]])) next
     df$cN[(qrows[i]+1):(qrows[i]+nrow(chgrps[[i]]))] <- chgrps[[i]]$name
@@ -59,13 +87,17 @@ dfs2xls <- function(l,filename){
   saveWorkbook(wb,filename)
 }
 
-.getgrp <- function(df,r,l){
+.getgrp <- function(df,r){
+  # the length is the difference between the row numbers of successive entries
+  # (minus 1).  the length of the last entry is the number of remaining rows
+  l <- diff(which(!is.na(df$`question type`[r:nrow(df)])))[1]-1
+  if(length(l)==0) l <- nrow(df)-r
   chcols <- grep("^choices",colnames(df),value=TRUE)
-  anstxt <- cbind(data.frame(name=1:l),as.data.frame(df[r:(r+l-1),chcols]))
-  #remove empties
-  anstxt <- anstxt[by(anstxt,rownames(anstxt),
-                      function(r)any(!is.na(r[-1]))),]
-  colnames(anstxt)[-1] <- sub("choices","label",chcols)
+  anstxt <- df[(r+1):(r+l),c("name",chcols)]
+
+  #remove empties (first choice column)
+  anstxt <- anstxt[!is.na(anstxt[[chcols[1]]]),]
+  colnames(anstxt)[-1] <- sub("^choices","label",chcols)
   anstxt$name <- paste0("c",1:nrow(anstxt))
   anstxt
 }

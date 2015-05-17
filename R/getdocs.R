@@ -1,16 +1,36 @@
+googleAuth <- function() getOption("googleAuthToken", googleAuthPrompt())
 
-
-getSheet <- function(wb, name=NULL, as.data.frame=TRUE, header=TRUE,
-                     con=getOption("GoogleDocsConnection",
-                                   default = .googlecon())){
-  l <- getWorksheets(wb, con)
-  if(!is.null(name) && name %in% names(l)){
-    if(as.data.frame) 
-      sheetAsMatrix(l[[name]],header=header,con=con,trim=FALSE,
-                    stringsAsFactors=FALSE) else 
-      l[[name]]
-  } else stop("no such sheet")
+googleAuthPrompt <- function(){
+  uid <- readline("login: ")
+  pwd <- readline("")
+  getGoogleAuth(uid,pwd,"wise")
 }
+
+googleConn <- function()
+  getOption("googleConn", getGoogleDocsConnection(auth=googleAuth()))
+
+
+
+
+
+
+
+
+
+
+
+
+# getSheet <- function(wb, name=NULL, as.data.frame=TRUE, header=TRUE,
+#                      con=getOption("GoogleDocsConnection",
+#                                    default = .googlecon())){
+#   l <- getWorksheets(wb, con)
+#   if(!is.null(name) && name %in% names(l)){
+#     if(as.data.frame)
+#       sheetAsMatrix(l[[name]],header=header,con=con,trim=FALSE,
+#                     stringsAsFactors=FALSE) else
+#       l[[name]]
+#   } else stop("no such sheet")
+# }
 
 getWorkbook <- function(
   name=NULL,
