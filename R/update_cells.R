@@ -2,6 +2,7 @@
 #                                 collapse="\n"))
 library(RCurl)
 library(XML)
+library(RGoogleDocs)
 
 modifySheet <- function(sh,mod,...) UseMethod("modifySheet")
 
@@ -10,7 +11,7 @@ modifySheet <- function(sh,mod,...) UseMethod("modifySheet")
 #' modify the contents of a sheet
 #'
 #' takes a sheet object and a function and changes the contents of the sheet
-#' using the funtion
+#' using the function
 #'
 #' @param sheet a sheet object
 #' @param mod a function that takes a data frame and returns another, or another
@@ -46,8 +47,8 @@ as.data.frame <- function(x,...) UseMethod("as.data.frame")
 #'
 as.data.frame.GoogleWorksheetRef <- function(x,header=TRUE,trim=FALSE,...){
   r <- suppressWarnings(
-    tryCatch(sheetAsMatrix(sh,header=header,trim=trim),error=identity))
-  if(is(r,"error") && e$message=="invalid 'times' argument")
+    tryCatch(sheetAsMatrix(x,header=header,trim=trim,...),error=identity))
+  if(is(r,"error") && r$message=="invalid 'times' argument")
     data.frame() else r
 }
 
@@ -92,7 +93,6 @@ header.sheet <- function(sheet) c(
 #'
 getCellsFeed <- function(sheet,extrema=c(NA,NA,c(dim(sheet))),
                          get.empty=any(!is.na(extrema))){
-  #   extrema <- c(minr,maxr,minc,maxc)
   nextrema <- c("min-row","min-col","max-row","max-col")
   req <- paste0(sheet@cellsfeed,"?",
                 paste(c(paste(nextrema,extrema,sep="=")[!is.na(extrema)],
@@ -131,11 +131,13 @@ getEditLinks <- function(x) getNodeSet(x,"//def:entry/def:link[@rel='edit']",
 #' create an update request to modify a sheet
 #'
 #' retrieves a cells feed document for the sheet, compares the cells to the
-#' elements of the data.frame
+#' elements of the data.frame, and forms an xml request to implement the
+#' differences
 createUpdateRequest <- function(df,sheet){
+  if(is.null(df)) df <- data.frame()
   df <- rbind(colnames(df),df)
   df[is.na(df)] <- ""
-  x <- getCellsFeed(sheet,extrema=c(NA,NA,pmax(dim(sheet),dim(df))))
+  x <- getCellsFeed(sheet,extrema=c(NA,NA,pmax(dim(sheet)+c(1,0),dim(df))))
   mapply(function(entry,cell){
     cont <- xmlAttrs(cell)
     cont <- list(
@@ -146,11 +148,11 @@ createUpdateRequest <- function(df,sheet){
     browser(expr=!is(entry,"XMLInternalNode"))
     # if the entry is in the bounds of the data.frame and has the same value,
     # delete it from the list of updates
-    if(cont$row<=nrow(df) &
-         cont$col<=ncol(df) &
+    if(cont$row<=nrow(df) &&
+         cont$col<=ncol(df) &&
          cont$inputValue==df[cont$row,cont$col])
       removeNodes(entry) else{
-        if(cont$row>nrow(df) | cont$col>ncol(df))
+        if(cont$row>nrow(df) || cont$col>ncol(df))
           # if the entry is outside the data.frame, clear it
           xmlAttrs(cell)["inputValue"] <- "" else
             # otherwise, update it to the value in the data frame
@@ -189,6 +191,7 @@ putRequest <- function(sheet,request){
   h$value()
 }
 
+#' fix the default namespace on an XML doc
 fixns <- function(x,defstr="def"){
   ns <- sapply(xmlNamespaceDefinitions(x),function(d)d$uri)
   names(ns) <- ifelse(names(ns)=="",defstr,names(ns))

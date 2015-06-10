@@ -73,7 +73,8 @@ makeXLSForm <- function(df, to=NULL){
   df$name[grows] <- paste0("G",1:length(grows))
   chgrps <- mapply(
     function(g,n)
-      if(!is.null(g)) g <- cbind("list name"=rep(n,nrow(g)),g),
+      if(!is.null(g)) g <- cbind("list name"=rep(n,nrow(g)),g,
+                                 stringsAsFactors=FALSE),
     chgrps,names(chgrps)
   )
   choices <- do.call(rbind,chgrps)
@@ -87,17 +88,18 @@ dfs2xls <- function(l,filename){
   saveWorkbook(wb,filename)
 }
 
-.getgrp <- function(df,r){
+.getgrp <- function(df,r,skips=FALSE){
   # the length is the difference between the row numbers of successive entries
   # (minus 1).  the length of the last entry is the number of remaining rows
   l <- diff(which(!is.na(df$`question type`[r:nrow(df)])))[1]-1
   if(length(l)==0) l <- nrow(df)-r
   chcols <- grep("^choices",colnames(df),value=TRUE)
   anstxt <- df[(r+1):(r+l),c("name",chcols)]
+  if(skips) anstxt$skip <- df[(r+1):(r+l),"skip to"]
 
   #remove empties (first choice column)
   anstxt <- anstxt[!is.na(anstxt[[chcols[1]]]),]
-  colnames(anstxt)[-1] <- sub("^choices","label",chcols)
+  colnames(anstxt) <- sub("^choices","label",colnames(anstxt))
   anstxt$name <- paste0("c",1:nrow(anstxt))
   anstxt
 }
