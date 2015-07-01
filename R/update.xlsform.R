@@ -1,4 +1,4 @@
-load("data/auth.Rdata")
+#load("data/auth.Rdata")
 update.xlsform <- function(sheetid){
   # get a token for the wise service (sheets) from google
   auth <- getGoogleAuth(uname,pwd,"wise")
