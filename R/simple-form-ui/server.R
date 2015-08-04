@@ -1,3 +1,5 @@
+library(svyr)
+
 shinyServer(function(input, output) {
 #   browser()
 #   output$filename <- sub("csv$","xlsx",input$simple.form$name)
@@ -5,7 +7,7 @@ shinyServer(function(input, output) {
     filename=function()sub("csv$","xlsx",input$simple.form$name),
     content=function(file){
       if(is.null(input$simple.form))return(NULL)
-      svyr::csv2form(input$simple.form$datapath,path=file)
+      csv2form(input$simple.form$datapath,path=file)
     }
 #   output$contents <- renderTable({
 #     # input$file1 will be NULL initially. After the user selects
