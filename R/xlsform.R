@@ -1,6 +1,30 @@
 library(xlsx)
 library(RGoogleDocs)
+library(plyr)
 
+#' convert a csv "simple survey" file into an xlsForm
+csv2form <- function(f,path=NULL)xlsx2form(f,csv=TRUE,path=path)
+
+#' convert an xlsx file into an xlsForm
+xlsx2form <- function(f,csv=FALSE,path=NULL){
+  if(csv) wb <- createWorkbook() else wb <- loadWorkbook(f)
+  if(csv) df <- read.csv(f,header=FALSE,stringsAsFactors=FALSE) else
+    df <- read.xlsx(f,sheetName="survey",header=FALSE,stringsAsFactors=FALSE)
+  colnames(df) <- df[1,]
+  df <- df[-1,!is.na(df[1,])]
+  l <- makeXLSForm(df)
+  shnames <- names(getSheets(wb))
+  lapply(shnames[shnames %in% names(l)],function(n)removeSheet(wb,n))
+  lapply(names(l),function(n){
+    sh <- createSheet(wb,n)
+    addDataFrame(l[[n]],sh,row.names = FALSE)
+  })
+  if(is.null(path)){
+    f <- gsub("[^A-z0-9./_-]","_",f)
+    if(csv) f <- sub("csv$","xlsx",f)
+  } else f <- path
+  saveWorkbook(wb,f)
+}
 
 #' create an xlsform from a simplified form specification
 #'
@@ -9,6 +33,7 @@ library(RGoogleDocs)
 #' process.
 #'
 #' @param df a data.frame or \code{GoogleWorksheetRef} object
+#' @param to a file to write the resulting form to in xlsx format
 #' @return a list of two data frames with the contents of the survey and choices
 #' sheets in an xlsform
 makeXLSForm <- function(df, to=NULL){
@@ -19,10 +44,17 @@ makeXLSForm <- function(df, to=NULL){
   # factors to strings
   fs <- sapply(df, is.factor)
   df[fs] <- lapply(df[fs], as.character)
+
+  # treat empty cells as NA
+  df[df==""] <- NA
+
+  # remove names from a previous iteration
+  df[,c("name","cN","type")] <- NA
+
   # these types are considered questions
   qtypes <- c(
     "select_one",
-    "select_multi",
+    "select_multiple",
     "text",
     "integer",
     "decimal",
@@ -78,15 +110,47 @@ makeXLSForm <- function(df, to=NULL){
     chgrps,names(chgrps)
   )
   choices <- do.call(rbind,chgrps)
-  list(survey=df,choices=choices)
+  l=list(survey=df,choices=choices,pretty=prettify.xlsform(df))
+  if(!is.null(to))dfs2xls(l,to)
+  l
 }
 
-dfs2xls <- function(l,filename){
+#' save a list of data.frames as an xlsx file
+dfs2xls <- function(l,filename=NULL){
   wb <- createWorkbook()
   lapply(names(l),createSheet,wb=wb)
   mapply(addDataFrame,l,getSheets(wb),MoreArgs=list(row.names=FALSE))
-  saveWorkbook(wb,filename)
+  if(!is.null(filename))saveWorkbook(wb,filename)
+  wb
 }
+
+
+#' make an simple xlsform readable
+prettify.xlsform <- function(df){
+  qrows <- grep("^Q[1-9][0-9]*$",df$name)
+  df1 <- ldply(qrows,function(i){
+
+    n <- paste0(gsub("[^0-9]","",df$name[i]),".")
+    question <- as.character(df[i,grep("^label(::.+|)$",colnames(df))[1]])
+    if(df[i,"question type"]=="select_one")
+      question <- paste0(question,"\nSELECT ONE")
+    if(df[i,"question type"]=="select_multiple")
+      question <- paste0(question,"\nSELECT ALL THAT APPLY")
+    answers <-
+      if(df$`question type`[i] %in% c("select_one","select_multiple")){
+        a <- .getgrp(df,i,skips=TRUE)
+        a <- ifelse(is.na(a[,"skip"]),a[,2],paste(a[,2],"-> SKIP TO",a[,"skip"]))
+        if(!is.na(df$`include other`) && df$`include other`=="or_other")
+          a <- c(a,"other: ____________")
+        paste(letters[1:length(a)],a,sep=". ",collapse="\n")
+      } else "____________"
+
+    c(n,question,answers)
+  })
+  colnames(df1) <- c("","Question","Answers")
+  df1
+}
+
 
 .getgrp <- function(df,r,skips=FALSE){
   # the length is the difference between the row numbers of successive entries
@@ -107,3 +171,4 @@ dfs2xls <- function(l,filename){
 #' turn arbitrary strings into legal xlsForm names.
 .str2name <- function(str)gsub("[^A-z0-9]+","_",sub("^([^A-z].*$)","X\\1",str))
 # .str2name("b1&forty five-*...5.6.7...")
+# "b1_forty_five_5_6_7_
