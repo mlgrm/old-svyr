@@ -1,31 +1,31 @@
 library(jsonlite)
 #' load odk data from files
-#' 
-#' \code{load.svy} takes a data file and a metadata file and returns a svy 
+#'
+#' \code{load.svy} takes a data file and a metadata file and returns a svy
 #' object.
-#' 
+#'
 #' The data file is read into a data frame. Then the optional update.fun is run
 #' on the data.frame to incorporate post-collection corrections or updates. This
 #' function should not add choices or make any other changes to the meta data or
 #' the attributes of the data.frame or its columns.  It should simply take the
 #' data.frame as its only argument and return the updated data.frame in the same
-#' format, as if it had just been read from file.  
-#' 
+#' format, as if it had just been read from file.
+#'
 #' The metadata file is parsed into a list using \code{fromJSON} and
 #' the questions are extracted recursively using \code{extract} on the top level
-#' \code{children} element.  For each question, data is retrieved from the 
+#' \code{children} element.  For each question, data is retrieved from the
 #' corresponding column(s) of the data.frame and appended to the survey, and
-#' the metadata is appended to the data's attributes (see \code{\link{svq}}).  
-#' The data is either a vector or a matrix, depending on the question 
+#' the metadata is appended to the data's attributes (see \code{\link{svq}}).
+#' The data is either a vector or a matrix, depending on the question
 #' type (see \code{\link{extract}})
-#' 
+#'
 #' Finally the elements of metadata list (except \code{children}) are appended
 #' to the attributes of the resultant data.frame
-#' 
+#'
 #' @section Note:
 #' The default parameters of this function are meant to function with formhub
 #' file naming conventions.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' load.svy("mysurvey_2015_05_01_05_31_27.csv")
@@ -35,7 +35,7 @@ library(jsonlite)
 #' @param update.fun an optional function to modify the raw data
 #' @return an object of class svy inheriting from data.frame, where each column
 #' is an object of class svq of a type appropriate to the question type
-#' 
+#'
 load.svy <- function(data,form=sub("_[0-9_]+.csv",".json", data),
                      update.fun=identity){
   form <- fromJSON(form)
@@ -56,36 +56,36 @@ load.svy <- function(data,form=sub("_[0-9_]+.csv",".json", data),
 loadsvy <- load.svy
 
 #' extract form data
-#' 
-#' \code{extract} takes a list of (nested) questions in odk json format and 
+#'
+#' \code{extract} takes a list of (nested) questions in odk json format and
 #' extracts the corresponding data from an appropriately formatted data.frame
-#' 
+#'
 #' This function is primarily used by \code{\link{load.svy}}, but can be used on
-#' its own to extract \code{svq} objects from an odk survey.  Each row in the 
-#' data.frame corresponds to a question or question group.  If it is a group, 
-#' its \code{name} is appended to the group vector and \code{extract} is called 
+#' its own to extract \code{svq} objects from an odk survey.  Each row in the
+#' data.frame corresponds to a question or question group.  If it is a group,
+#' its \code{name} is appended to the group vector and \code{extract} is called
 #' recursively on its \code{children} element.
-#' 
+#'
 #' For each question, a variable of the appropriate type is extracted from
 #' \code{dat} using the \code{name} element, the \code{group} vector to select
-#' the appropriate column(s).  "select one" questions remain factors with 
-#' levels converted to their labels (in English) and stored in the 
-#' \code{choices} attribute of the variable.  "select 
+#' the appropriate column(s).  "select one" questions remain factors with
+#' levels converted to their labels (in English) and stored in the
+#' \code{choices} attribute of the variable.  "select
 #' all that apply" questions are converted into logical matrices with one column
-#' for each choice (and wrapped in \code{I()} to prevent them from being broken 
+#' for each choice (and wrapped in \code{I()} to prevent them from being broken
 #' by \code{as.data.frame()}) and the (English) labels for the choices stored in
 #' the \code{choices} attribute of the matrix.  "decimal" and "integer" types
 #' are converted, if necessary, to numeric vectors, "date" and "today" types are
 #' converted to \code{Date}, "time" types to \code{POSIXct}, and all others to
 #' character vectors. Then \code{group} and all the remaining elements of the
 #' question are appended to the attributes of the variable.
-#' 
+#'
 #' @param df a dataframe of questions created by \code{fromJSON}
 #' @param dat a dataframe containing all the question data for the questions
 #' @param group the current groups (\code{NULL} for the top level)
-#' 
+#'
 #' @return
-#' a (flattened) list of objects of type \code{svq}, one for each question in 
+#' a (flattened) list of objects of type \code{svq}, one for each question in
 #' df.
 extract <- function(df,dat,group=NULL){
   nm <- factor(df$name,levels=df$name)
