@@ -7,6 +7,11 @@ shinyServer(function(input,output){
       if(is.null(input$data.set) || is.null(input$json.form))return(NULL)
       #browser()
       s <- load.svy(input$data.set$datapath,input$json.form$datapath)
+      s <- as.data.frame(lapply(s,function(c){
+        if(is(c,"AsIs"))class(c) <- "matrix"
+        c
+        }
+      ))
       write.xlsx(as.data.frame.data.frame(s),file,showNA=FALSE)
     }
   )

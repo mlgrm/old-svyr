@@ -36,7 +36,7 @@ library(jsonlite)
 #' @return an object of class svy inheriting from data.frame, where each column
 #' is an object of class svq of a type appropriate to the question type
 #'
-load.svy <- function(data,form=sub("_[0-9_]+.csv",".json", data),
+load.svy <- function(data,form=sub("_[0-9_]+.csv",".json", datka),
                      update.fun=identity){
   form <- fromJSON(form)
   dat <- cleandat(read.csv(data,na.strings=c("n/a","NA","","skip")))
