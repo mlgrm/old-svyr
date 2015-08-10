@@ -13,10 +13,10 @@ shinyServer(function(input,output){
           colnames(c) <- sapply(attributes(c)$children[[1]]$label,
                                 function(e)if(is.list(e)) e$English else e)
         }
-        browser(expr=is.matrix(c))
+        #browser(expr=is.matrix(c))
         c
       }
-      ))
+      ),optional=TRUE)
       write.xlsx(as.data.frame.data.frame(s),file,showNA=FALSE)
     }
   )

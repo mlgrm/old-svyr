@@ -22,6 +22,8 @@ shinyUI(fluidPage(
               ),
       fileInput("json.form", "Choose a json form to upload",
                 accept = '.json'),
+#       checkboxInput("questionsAsHeaders", "Would you like the questions to
+#                     appear in the column headers?"),
       tags$hr(),
       downloadButton('data', 'Download converted data set')
     )
