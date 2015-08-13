@@ -4,8 +4,7 @@ shinyUI(fluidPage(
     mainPanel(
       p('This is an interface for converting simple survey specifications',
         '(see the',
-        a(href=paste0('https://sites.google.com/a/samuelhall.org/survey-tools/',
-                      'home/simplified-survey-tool'),
+        a(href=paste0('https://sites.google.com/a/samuelhall.org/survey-tools/simplified-survey-tool'),
           "simple survey guide"), ')',
         'into xlsform files appropriate for uploading to the formhub server.',
         'The input file should be in csv format, created from excel\'s export',

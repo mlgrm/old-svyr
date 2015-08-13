@@ -142,8 +142,9 @@ extract.date <- function(r,dat,group=NULL){
 
 extract.time <- function(r,dat,group=NULL){
   col <- getcol(r$name,dat,group)
-  if(is.factor(col)) as.POSIXct(levels(col)[col]) else
-    as.POSIXct(col)
+  if(is.factor(col)) col <- levels(col)[col]
+  as.POSIXct(sub("\\.[0-9]{3}","",sub(":([0-9]{2})$","\\1",col)),
+             format="%Y-%m-%dT%H:%M:%S%z")
 }
 
 extract.integer <- function(r,dat,group=NULL){

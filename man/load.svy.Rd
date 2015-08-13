@@ -4,7 +4,7 @@
 \alias{load.svy}
 \title{load odk data from files}
 \usage{
-load.svy(data, form = sub("_[0-9_]+.csv", ".json", data),
+load.svy(data, form = sub("_[0-9_]+.csv", ".json", datka),
   update.fun = identity)
 }
 \arguments{
