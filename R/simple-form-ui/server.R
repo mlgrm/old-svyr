@@ -4,7 +4,10 @@ shinyServer(function(input, output) {
 #   browser()
 #   output$filename <- sub("csv$","xlsx",input$simple.form$name)
   output$xlsform <- downloadHandler(
-    filename=function()sub("csv$","xls",input$simple.form$name),
+    filename=function()
+      paste0(gsub("[^A-z0-9_-]+","_",
+                  sub("^([^A-z])","form_\\1",
+                      sub("\\.csv","", input$simple.form$name))),".xls"),
     content=function(file){
       if(is.null(input$simple.form))return(NULL)
       csv2form(input$simple.form$datapath,path=file,
