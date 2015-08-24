@@ -6,8 +6,26 @@
 \usage{
 load.svy(data, form = sub("_[0-9_]+.csv", ".json", datka),
   update.fun = identity)
+
+load.svy(data, form = sub("_[0-9_]+.csv", ".json", datka),
+  update.fun = identity)
+
+load.svy(data, form = sub("_[0-9_]+.csv", ".json", datka),
+  update.fun = identity)
 }
 \arguments{
+\item{data}{a filename containing the survey data in csv format}
+
+\item{form}{a filename containing the survey metadata in json format}
+
+\item{update.fun}{an optional function to modify the raw data}
+
+\item{data}{a filename containing the survey data in csv format}
+
+\item{form}{a filename containing the survey metadata in json format}
+
+\item{update.fun}{an optional function to modify the raw data}
+
 \item{data}{a filename containing the survey data in csv format}
 
 \item{form}{a filename containing the survey metadata in json format}
@@ -17,12 +35,60 @@ load.svy(data, form = sub("_[0-9_]+.csv", ".json", datka),
 \value{
 an object of class svy inheriting from data.frame, where each column
 is an object of class svq of a type appropriate to the question type
+
+an object of class svy inheriting from data.frame, where each column
+is an object of class svq of a type appropriate to the question type
+
+an object of class svy inheriting from data.frame, where each column
+is an object of class svq of a type appropriate to the question type
 }
 \description{
 \code{load.svy} takes a data file and a metadata file and returns a svy
 object.
+
+\code{load.svy} takes a data file and a metadata file and returns a svy
+object.
+
+\code{load.svy} takes a data file and a metadata file and returns a svy
+object.
 }
 \details{
+The data file is read into a data frame. Then the optional update.fun is run
+on the data.frame to incorporate post-collection corrections or updates. This
+function should not add choices or make any other changes to the meta data or
+the attributes of the data.frame or its columns.  It should simply take the
+data.frame as its only argument and return the updated data.frame in the same
+format, as if it had just been read from file.
+
+The metadata file is parsed into a list using \code{fromJSON} and
+the questions are extracted recursively using \code{extract} on the top level
+\code{children} element.  For each question, data is retrieved from the
+corresponding column(s) of the data.frame and appended to the survey, and
+the metadata is appended to the data's attributes (see \code{\link{svq}}).
+The data is either a vector or a matrix, depending on the question
+type (see \code{\link{extract}})
+
+Finally the elements of metadata list (except \code{children}) are appended
+to the attributes of the resultant data.frame
+
+The data file is read into a data frame. Then the optional update.fun is run
+on the data.frame to incorporate post-collection corrections or updates. This
+function should not add choices or make any other changes to the meta data or
+the attributes of the data.frame or its columns.  It should simply take the
+data.frame as its only argument and return the updated data.frame in the same
+format, as if it had just been read from file.
+
+The metadata file is parsed into a list using \code{fromJSON} and
+the questions are extracted recursively using \code{extract} on the top level
+\code{children} element.  For each question, data is retrieved from the
+corresponding column(s) of the data.frame and appended to the survey, and
+the metadata is appended to the data's attributes (see \code{\link{svq}}).
+The data is either a vector or a matrix, depending on the question
+type (see \code{\link{extract}})
+
+Finally the elements of metadata list (except \code{children}) are appended
+to the attributes of the resultant data.frame
+
 The data file is read into a data frame. Then the optional update.fun is run
 on the data.frame to incorporate post-collection corrections or updates. This
 function should not add choices or make any other changes to the meta data or
@@ -46,7 +112,25 @@ to the attributes of the resultant data.frame
 The default parameters of this function are meant to function with formhub
 file naming conventions.
 }
+
+\section{Note}{
+
+The default parameters of this function are meant to function with formhub
+file naming conventions.
+}
+
+\section{Note}{
+
+The default parameters of this function are meant to function with formhub
+file naming conventions.
+}
 \examples{
+\dontrun{
+load.svy("mysurvey_2015_05_01_05_31_27.csv")
+}
+\dontrun{
+load.svy("mysurvey_2015_05_01_05_31_27.csv")
+}
 \dontrun{
 load.svy("mysurvey_2015_05_01_05_31_27.csv")
 }

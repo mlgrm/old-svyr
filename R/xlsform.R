@@ -3,16 +3,18 @@ library(RGoogleDocs)
 library(plyr)
 
 #' convert a csv "simple survey" file into an xlsForm
-csv2form <- function(f,path=NULL)xlsx2form(f,csv=TRUE,path=path)
+csv2form <- function(f,path=NULL,title=NULL,lang="English")
+  xlsx2form(f,csv=TRUE,path=path,title=title, lang=lang)
 
 #' convert an xlsx file into an xlsForm
-xlsx2form <- function(f,csv=FALSE,path=NULL){
+xlsx2form <- function(f,csv=FALSE,path=NULL,title=NULL,lang="English"){
   if(csv) wb <- createWorkbook() else wb <- loadWorkbook(f)
   if(csv) df <- read.csv(f,header=FALSE,stringsAsFactors=FALSE) else
     df <- read.xlsx(f,sheetName="survey",header=FALSE,stringsAsFactors=FALSE)
   colnames(df) <- df[1,]
   df <- df[-1,!is.na(df[1,])]
-  l <- makeXLSForm(df)
+  #browser()
+  l <- makeXLSForm(df,title=title,lang=lang)
   shnames <- names(getSheets(wb))
   lapply(shnames[shnames %in% names(l)],function(n)removeSheet(wb,n))
   lapply(names(l),function(n){
@@ -36,7 +38,7 @@ xlsx2form <- function(f,csv=FALSE,path=NULL){
 #' @param to a file to write the resulting form to in xlsx format
 #' @return a list of two data frames with the contents of the survey and choices
 #' sheets in an xlsform
-makeXLSForm <- function(df, to=NULL){
+makeXLSForm <- function(df, to=NULL, title=NULL, lang="English"){
   if(is(df,"GoogleWorksheetRef")) return(
     makeXLSForm(as.data.frame(df,header=TRUE,trim=FALSE,
                               stringsAsFactors = FALSE)))
@@ -67,6 +69,7 @@ makeXLSForm <- function(df, to=NULL){
 
   # question rows are those with non-empty values in the first "label*" column
   # and valid question types in the "question type" column
+#   browser()
   qrows <- which(!is.na(df[,grep("^label(::[A-z0-9]+|)$",colnames(df))[1]]) &
                    (df$`question type` %in% qtypes))
   df$type <- as.character(df$type)
@@ -110,7 +113,13 @@ makeXLSForm <- function(df, to=NULL){
     chgrps,names(chgrps)
   )
   choices <- do.call(rbind,chgrps)
-  l=list(survey=df,choices=choices,pretty=prettify.xlsform(df))
+  l <- list(survey=df,choices=choices,pretty=prettify.xlsform(df))
+  #browser()
+  if(!is.null(title))
+    l$settings <- data.frame(`form_title`=title,
+                            `form_id`=sub("(^[0-9])","form_\\1",
+                                          gsub("[^A-z0-9_-]+","_",title)),
+                            `default_language`=lang)
   if(!is.null(to))dfs2xls(l,to)
   l
 }

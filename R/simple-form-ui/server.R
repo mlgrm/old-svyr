@@ -4,10 +4,11 @@ shinyServer(function(input, output) {
 #   browser()
 #   output$filename <- sub("csv$","xlsx",input$simple.form$name)
   output$xlsform <- downloadHandler(
-    filename=function()sub("csv$","xlsx",input$simple.form$name),
+    filename=function()sub("csv$","xls",input$simple.form$name),
     content=function(file){
       if(is.null(input$simple.form))return(NULL)
-      csv2form(input$simple.form$datapath,path=file)
+      csv2form(input$simple.form$datapath,path=file,
+               title=sub("\\.csv$","",input$simple.form$name))
     }
 #   output$contents <- renderTable({
 #     # input$file1 will be NULL initially. After the user selects

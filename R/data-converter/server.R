@@ -6,18 +6,13 @@ shinyServer(function(input,output){
     content=function(file){
       if(is.null(input$data.set) || is.null(input$json.form))return(NULL)
       #browser()
-      s <- load.svy(input$data.set$datapath,input$json.form$datapath)
-      s <- as.data.frame(lapply(s,function(c){
-        if(is(c,"AsIs")){
-          class(c) <- "matrix"
-          colnames(c) <- sapply(attributes(c)$children[[1]]$label,
-                                function(e)if(is.list(e)) e$English else e)
-        }
-        #browser(expr=is.matrix(c))
-        c
-      }
-      ),optional=TRUE)
+      wb <- svy2wb(input$data.set$datapath,input$json.form$datapath)
       write.xlsx(as.data.frame.data.frame(s),file,showNA=FALSE)
     }
   )
 })
+
+svy2df <- function(dat,json,questionsAsHeaders=FALSE){
+  s <- load.svy(dat,json)
+  if(questionsAsHeaders)
+}
