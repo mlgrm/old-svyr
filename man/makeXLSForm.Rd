@@ -4,7 +4,7 @@
 \alias{makeXLSForm}
 \title{create an xlsform from a simplified form specification}
 \usage{
-makeXLSForm(df, to = NULL)
+makeXLSForm(df, to = NULL, title = NULL, lang = "English")
 }
 \arguments{
 \item{df}{a data.frame or \code{GoogleWorksheetRef} object}
