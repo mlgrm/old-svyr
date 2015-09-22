@@ -5,24 +5,8 @@
 \title{extract form data}
 \usage{
 extract(df, dat, group = NULL)
-
-extract(df, dat, group = NULL)
-
-extract(df, dat, group = NULL)
 }
 \arguments{
-\item{df}{a dataframe of questions created by \code{fromJSON}}
-
-\item{dat}{a dataframe containing all the question data for the questions}
-
-\item{group}{the current groups (\code{NULL} for the top level)}
-
-\item{df}{a dataframe of questions created by \code{fromJSON}}
-
-\item{dat}{a dataframe containing all the question data for the questions}
-
-\item{group}{the current groups (\code{NULL} for the top level)}
-
 \item{df}{a dataframe of questions created by \code{fromJSON}}
 
 \item{dat}{a dataframe containing all the question data for the questions}
@@ -32,64 +16,12 @@ extract(df, dat, group = NULL)
 \value{
 a (flattened) list of objects of type \code{svq}, one for each question in
 df.
-
-a (flattened) list of objects of type \code{svq}, one for each question in
-df.
-
-a (flattened) list of objects of type \code{svq}, one for each question in
-df.
 }
 \description{
 \code{extract} takes a list of (nested) questions in odk json format and
 extracts the corresponding data from an appropriately formatted data.frame
-
-\code{extract} takes a list of (nested) questions in odk json format and
-extracts the corresponding data from an appropriately formatted data.frame
-
-\code{extract} takes a list of (nested) questions in odk json format and
-extracts the corresponding data from an appropriately formatted data.frame
 }
 \details{
-This function is primarily used by \code{\link{load.svy}}, but can be used on
-its own to extract \code{svq} objects from an odk survey.  Each row in the
-data.frame corresponds to a question or question group.  If it is a group,
-its \code{name} is appended to the group vector and \code{extract} is called
-recursively on its \code{children} element.
-
-For each question, a variable of the appropriate type is extracted from
-\code{dat} using the \code{name} element, the \code{group} vector to select
-the appropriate column(s).  "select one" questions remain factors with
-levels converted to their labels (in English) and stored in the
-\code{choices} attribute of the variable.  "select
-all that apply" questions are converted into logical matrices with one column
-for each choice (and wrapped in \code{I()} to prevent them from being broken
-by \code{as.data.frame()}) and the (English) labels for the choices stored in
-the \code{choices} attribute of the matrix.  "decimal" and "integer" types
-are converted, if necessary, to numeric vectors, "date" and "today" types are
-converted to \code{Date}, "time" types to \code{POSIXct}, and all others to
-character vectors. Then \code{group} and all the remaining elements of the
-question are appended to the attributes of the variable.
-
-This function is primarily used by \code{\link{load.svy}}, but can be used on
-its own to extract \code{svq} objects from an odk survey.  Each row in the
-data.frame corresponds to a question or question group.  If it is a group,
-its \code{name} is appended to the group vector and \code{extract} is called
-recursively on its \code{children} element.
-
-For each question, a variable of the appropriate type is extracted from
-\code{dat} using the \code{name} element, the \code{group} vector to select
-the appropriate column(s).  "select one" questions remain factors with
-levels converted to their labels (in English) and stored in the
-\code{choices} attribute of the variable.  "select
-all that apply" questions are converted into logical matrices with one column
-for each choice (and wrapped in \code{I()} to prevent them from being broken
-by \code{as.data.frame()}) and the (English) labels for the choices stored in
-the \code{choices} attribute of the matrix.  "decimal" and "integer" types
-are converted, if necessary, to numeric vectors, "date" and "today" types are
-converted to \code{Date}, "time" types to \code{POSIXct}, and all others to
-character vectors. Then \code{group} and all the remaining elements of the
-question are appended to the attributes of the variable.
-
 This function is primarily used by \code{\link{load.svy}}, but can be used on
 its own to extract \code{svq} objects from an odk survey.  Each row in the
 data.frame corresponds to a question or question group.  If it is a group,
