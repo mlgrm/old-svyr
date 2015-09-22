@@ -1,5 +1,6 @@
 library(svyr)
 
+options(shiny.maxRequestSize = 50*1024^2)
 shinyServer(function(input,output){
   output$data <- downloadHandler(
     filename=function()sub("\\.csv$","-converted.csv", input$data.set$name),
