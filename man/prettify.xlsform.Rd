@@ -4,7 +4,7 @@
 \alias{prettify.xlsform}
 \title{make an simple xlsform readable}
 \usage{
-prettify.xlsform(df)
+prettify.xlsform(df, qrows)
 }
 \description{
 make an simple xlsform readable

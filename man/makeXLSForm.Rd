@@ -5,7 +5,7 @@
 \title{create an xlsform from a simplified form specification}
 \usage{
 makeXLSForm(df, to = NULL, title = NULL, lang = "English",
-  uniqtag = FALSE)
+  uniqtag = FALSE, persistent.names = FALSE)
 }
 \arguments{
 \item{df}{a data.frame or \code{GoogleWorksheetRef} object}

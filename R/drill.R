@@ -1,35 +1,35 @@
 #' drill down (cross tabulate a svq)
-#' 
+#'
 #' \code{drill.svq} is the drill implementation for class \code{svq}
-#' 
+#'
 #' The svq is split by the factor \code{by} and cross sectional measurements
-#' are made for for each subgroup.  The measurement made is determined by the 
-#' type of the svq.  "select one" questions generate cross tabulations of 
+#' are made for for each subgroup.  The measurement made is determined by the
+#' type of the svq.  "select one" questions generate cross tabulations of
 #' responses in each subgroup and overall.  One table will be generated for the
 #' counts, a second for an estimate of the proportion of each subgroup
 #' responding with each choice, and a third for the standard error of each
 #' estimate.  "select all that apply" (select_multi) questions are similar
-#' but the proportions will not, in general, add up to one.  "decimal" and 
-#' "integer" questions will generate a table with the mean, the standard 
-#' deviation, the standard error (others to be added).  The last column in each 
+#' but the proportions will not, in general, add up to one.  "decimal" and
+#' "integer" questions will generate a table with the mean, the standard
+#' deviation, the standard error (others to be added).  The last column in each
 #' table will give the totals.  "date" questions will
 #' generate a table of frequencies.
-#' 
+#'
 #' Optionally, \code{q} can be a list of \code{svq} objects of the same length
 #' and question type, and \code{drill.svq} will return a list of results.
-#' \code{by} can also be a list of factors, with a similar result, but the 
+#' \code{by} can also be a list of factors, with a similar result, but the
 #' implementation of this is a little rough.
-#' 
+#'
 #' @section Stratified samples:
-#' 
+#'
 #' If the data was collected using stratified sampling, estimates and standard
 #' errors can be calculated accordingly by setting \code{strat} and \code{N}.
 #' \code{strat} should be a factor of the same length as q that can be used to
-#' split the data into the strata.  N is a vector of length 
+#' split the data into the strata.  N is a vector of length
 #' \code{length(levels(strat))} with the population size corresponding to each
-#' stratum.  If \code{N} is specified as an integer and strat is \code{NULL}, 
+#' stratum.  If \code{N} is specified as an integer and strat is \code{NULL},
 #' the finite population correction will be applied to the error estimates.
-#' 
+#'
 #' @param q a svq object
 #' @param by a factor to split \code{q} by (usually a "select one" svq)
 #' @param strat an optional factor of strata for stratified samples
@@ -49,8 +49,8 @@
 #' \itemize{\item{\code{means}}}
 #' for "date" types:
 #' \itemize{\item{\code{counts}}}
-#' 
-#' 
+#'
+#'
 # take a list of vectors or data frames, a list of grouping factors, and
 # a list of functions and apply each function to each grouping of each data
 # element
@@ -59,7 +59,7 @@ drill.svq <- function(q,by,strat=NULL,N=NULL,...){
   #       attr(c,"type") <- switch(class(c),
   #                                factor="select one",
   #                                matrix="select all that apply")
-  
+
   fun <- switch(attributes(q)$type,
                 "select one"=gpoll,
                 "select all that apply"={
@@ -243,7 +243,7 @@ drill <- function(dat,grpgs,f=gpoll,title=NULL,strat=NULL,N=NULL,...){
 }
 
 drillplex <- function(dat)
-  
+
   moe.mean <- function(v,c=DOC)qnorm(c)*sd(v)/sqrt(length(v))
 
 # apply a function recursively to splits of the first column by each successive
@@ -279,7 +279,7 @@ setSheet.default <- function(type,name,
     sheet <- getOption("table.display.sheet")
     return(sheet)
   }
-  
+
   currentRow <<- 1
   createSheet(wb,name)
 }
@@ -301,7 +301,7 @@ print.title <- function(title,type,sheet=NULL,
   currentRow
 }
 
-i <- 0
+#i <-
 print_nested_tables <-
   function(l,
            title=NULL,
@@ -418,25 +418,25 @@ tree <- function(l,name=""){
 }
 
 #' write tables to xlsx
-#' 
-#' \code{tbls2xlsx} takes a nested list of tables and writes them into a sheet 
+#'
+#' \code{tbls2xlsx} takes a nested list of tables and writes them into a sheet
 #' in an xlsx workbook object, optionally saving it to file.
-#' 
+#'
 #' Originally meant to save drill output to xlsx for making charts, this
 #' function traverses a (tree) list of tables and writes them, in the order
 #' encountered, into a single column on a sheet object from package \code{xlsx}.
 #' Each table must be a matrix and is written with a title formed from its
 #' position in the list, or if the attribute \code{title} is set, that is used.
-#' If \code{sheet} is not specified, a new one is created; if wb is not 
-#' specified, a new one is created.  If \code{filename} is specified, the 
+#' If \code{sheet} is not specified, a new one is created; if wb is not
+#' specified, a new one is created.  If \code{filename} is specified, the
 #' resultant workbook is written to file.
-#' 
+#'
 #' @param tbls a (nested) list of tables
 #' @param filename path to write the results to
 #' @param sheet the sheet object to write the tables to
 #' @param wb the workbook in which to create or find the sheet
 #' @return the resultant \code{workbook} object
-#'  
+#'
 tbls2xls <- function(tbls, filename=NULL,
                      sheet=createSheet(wb,sheetName = "tables"),
                      wb=createWorkbook()){

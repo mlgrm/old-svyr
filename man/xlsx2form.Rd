@@ -4,7 +4,8 @@
 \alias{xlsx2form}
 \title{convert an xlsx file into an xlsForm}
 \usage{
-xlsx2form(f, csv = FALSE, path = NULL, title = NULL, lang = "English")
+xlsx2form(f, csv = FALSE, path = NULL, title = NULL, lang = "English",
+  ...)
 }
 \description{
 convert an xlsx file into an xlsForm

@@ -4,7 +4,7 @@
 \alias{csv2form}
 \title{convert a csv "simple survey" file into an xlsForm}
 \usage{
-csv2form(f, path = NULL, title = NULL, lang = "English")
+csv2form(f, ...)
 }
 \description{
 convert a csv "simple survey" file into an xlsForm

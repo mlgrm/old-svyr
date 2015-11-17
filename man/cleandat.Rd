@@ -4,7 +4,7 @@
 \alias{cleandat}
 \title{clean up a data frame}
 \usage{
-cleandat(dat)
+cleandat(dat, optional = FALSE)
 }
 \description{
 clean up a data frame

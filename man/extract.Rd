@@ -4,7 +4,7 @@
 \alias{extract}
 \title{extract form data}
 \usage{
-extract(df, dat, group = NULL)
+extract(df, dat, group = NULL, make.names = TRUE, unlist = TRUE)
 }
 \arguments{
 \item{df}{a dataframe of questions created by \code{fromJSON}}

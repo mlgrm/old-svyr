@@ -3,18 +3,18 @@ library(RGoogleDocs)
 library(plyr)
 
 #' convert a csv "simple survey" file into an xlsForm
-csv2form <- function(f,path=NULL,title=NULL,lang="English")
-  xlsx2form(f,csv=TRUE,path=path,title=title, lang=lang)
+csv2form <- function(f,...)
+  xlsx2form(f,csv=TRUE,...)
 
 #' convert an xlsx file into an xlsForm
-xlsx2form <- function(f,csv=FALSE,path=NULL,title=NULL,lang="English"){
+xlsx2form <- function(f,csv=FALSE,path=NULL,title=NULL,lang="English",...){
   if(csv) wb <- createWorkbook() else wb <- loadWorkbook(f)
   if(csv) df <- read.csv(f,header=FALSE,stringsAsFactors=FALSE) else
     df <- read.xlsx(f,sheetName="survey",header=FALSE,stringsAsFactors=FALSE)
   colnames(df) <- df[1,]
   df <- df[-1,!is.na(df[1,])]
   #browser()
-  l <- makeXLSForm(df,title=title,lang=lang)
+  l <- makeXLSForm(df,...)
   shnames <- names(getSheets(wb))
   lapply(shnames[shnames %in% names(l)],function(n)removeSheet(wb,n))
   lapply(names(l),function(n){
@@ -22,7 +22,7 @@ xlsx2form <- function(f,csv=FALSE,path=NULL,title=NULL,lang="English"){
     addDataFrame(l[[n]],sh,row.names = FALSE)
   })
   if(is.null(path)){
-    f <- gsub("[^A-z0-9./_-]","_",f)
+    f <- gsub("[^A-z0-9./_-]+","_",f)
     if(csv) f <- sub("csv$","xlsx",f)
   } else f <- path
   saveWorkbook(wb,f)
@@ -38,7 +38,8 @@ xlsx2form <- function(f,csv=FALSE,path=NULL,title=NULL,lang="English"){
 #' @param to a file to write the resulting form to in xlsx format
 #' @return a list of two data frames with the contents of the survey and choices
 #' sheets in an xlsform
-makeXLSForm <- function(df, to=NULL, title=NULL, lang="English"){
+makeXLSForm <- function(df, to=NULL, title=NULL, lang="English", uniqtag=FALSE,
+                        persistent.names=FALSE){
   if(is(df,"GoogleWorksheetRef")) return(
     makeXLSForm(as.data.frame(df,header=TRUE,trim=FALSE,
                               stringsAsFactors = FALSE)))
@@ -69,21 +70,30 @@ makeXLSForm <- function(df, to=NULL, title=NULL, lang="English"){
 
   # question rows are those with non-empty values in the first "label*" column
   # and valid question types in the "question type" column
-#   browser()
+  #   browser()
   qrows <- which(!is.na(df[,grep("^label(::[A-z0-9]+|)$",colnames(df))[1]]) &
                    (df$`question type` %in% qtypes))
   df$type <- as.character(df$type)
   df$name <- as.character(df$name)
   df$cN <- as.character(df$cN)
 
-  # questions are named Q{1-N}
-  df$name[qrows] <- paste0("Q",1:length(qrows))
+  # questions are named Q{1-N} unless we're using UniqTag
+  #     if(uniqtag && require(uniqtag)){
+  #       df$name[qrows] <- uniqtag(
+  #         sub("^[^a-z]+","x",
+  #             gsub("[^a-z0-9_-]+","-",
+  #                  tolower(
+  #                    df[qrows,grep("^label(::[A-z0-9]+|)$",colnames(df))[1]])
+  #             )
+  #         ),5)
+  # } else {
+  #   }
+
   df$type <- as.character(df$`question type`)
 
   # non question or group types are named X{1-M}
   xrows <- erows[!(erows %in% qrows)]
   xrows <- xrows[grep("^(begin|end)\\s",df$`question type`[xrows],invert=TRUE)]
-  df$name[xrows] <- paste0("X",1:length(xrows))
 
   # extract choices for each "select_*" question
   chgrps <- mapply(function(r,l)
@@ -105,7 +115,19 @@ makeXLSForm <- function(df, to=NULL, title=NULL, lang="English"){
   })
   grows <- which(!is.na(df$type) & grepl("^begin\\s+(group|repeat)\\s*$",
                                          df$type))
-  df$name[grows] <- paste0("G",1:length(grows))
+
+  # name questions, groups and internals
+  if(persistent.names){
+    ncur <- sum(!is.na(df$name))
+    df$name[is.element(seq(nrow(df)),erows) & is.na(df$name)] <-
+      babble(length(erows))[ncur+1:length(erows)]
+  } else{
+    df$name[qrows] <- paste0("Q",1:length(qrows))
+    df$name[xrows] <- paste0("X",1:length(xrows))
+    df$name[grows] <- paste0("G",1:length(grows))
+  }
+
+
   chgrps <- mapply(
     function(g,n)
       if(!is.null(g)) g <- cbind("list name"=rep(n,nrow(g)),g,
@@ -113,13 +135,13 @@ makeXLSForm <- function(df, to=NULL, title=NULL, lang="English"){
     chgrps,names(chgrps)
   )
   choices <- do.call(rbind,chgrps)
-  l <- list(survey=df,choices=choices,pretty=prettify.xlsform(df))
+  l <- list(survey=df,choices=choices,pretty=prettify.xlsform(df,qrows))
   #browser()
   if(!is.null(title))
     l$settings <- data.frame(`form_title`=title,
-                            `form_id`=sub("(^[0-9])","form_\\1",
-                                          gsub("[^A-z0-9_-]+","_",title)),
-                            `default_language`=lang)
+                             `form_id`=sub("(^[0-9])","form_\\1",
+                                           gsub("[^A-z0-9_-]+","_",title)),
+                             `default_language`=lang)
   if(!is.null(to))dfs2xls(l,to)
   l
 }
@@ -135,8 +157,8 @@ dfs2xls <- function(l,filename=NULL){
 
 
 #' make an simple xlsform readable
-prettify.xlsform <- function(df){
-  qrows <- grep("^Q[1-9][0-9]*$",df$name)
+prettify.xlsform <- function(df,qrows){
+  #qrows <- grep("^Q[1-9][0-9]*$",df$name)
   df1 <- ldply(qrows,function(i){
 
     n <- paste0(gsub("[^0-9]","",df$name[i]),".")

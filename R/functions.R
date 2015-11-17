@@ -45,7 +45,7 @@ datsum <- function(dat,ql=NULL){
 
 Sys.setlocale('LC_ALL','C')
 #' clean up a data frame
-cleandat <- function(dat){
+cleandat <- function(dat,optional=FALSE){
   as.data.frame(lapply(dat,function(c){
 #      browser(expr=(class(c)=="integer"))
     if(is.integer(c)) c <- pres.svyq(c,as.numeric)
@@ -85,7 +85,7 @@ cleandat <- function(dat){
              c
            }
     )
-  }),stringsAsFactors=FALSE)
+  }),stringsAsFactors=FALSE,optional=optional)
 }
 
 #' extract repeats from survey data frame

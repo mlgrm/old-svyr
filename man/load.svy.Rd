@@ -5,7 +5,7 @@
 \title{load odk data from files}
 \usage{
 load.svy(data, form = sub("_[0-9_]+.csv", ".json", data),
-  update.fun = identity)
+  update.fun = identity, check.names = TRUE, include.repeats = FALSE)
 }
 \arguments{
 \item{data}{a filename containing the survey data in csv format}
