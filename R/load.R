@@ -212,8 +212,14 @@ extract.select.all.that.apply <-
 }
 
 extract.geopoint <- function(r,dat,group=NULL){
+<<<<<<< HEAD
   mat <- do.call(rbind,strsplit(as.character(getcol(r$name,dat,group))," "))
   browser()
+=======
+  col <- as.character(getcol(r$name,dat,group))
+  col[is.na(col)] <- "- - - -"
+  mat <- do.call(rbind,strsplit(as.character(col)," "))
+>>>>>>> eb64a56a165018f2bd7ae3e710825d4860159d77
   colnames(mat) <- c("latitude","longitude","altitude","accuracy")
   I(mat)
 }
