@@ -16,9 +16,10 @@ shinyServer(function(input,output){
 svy2df <- function(dat,json,questionsAsHeaders=FALSE){
   s <- load.svy(dat,json)
   if(questionsAsHeaders){}
-  colnames(s) <- gsub("G[0-9]+\\.","",colnames(s))
+  colnames(s) <- gsub("G[0-9]+(\\.|/)","",colnames(s))
   s <- as.data.frame(lapply(s,function(c){
-    if(is(c,"AsIs")){
+#     if(is(c,"AsIs")){
+    if(attr(c,"type")=="select all that apply"){
       class(c) <- "matrix"
       colnames(c) <- attr(c,"choices")
       #       if(is.data.frame(attributes(c)$children[[1]]$label))
@@ -28,8 +29,8 @@ svy2df <- function(dat,json,questionsAsHeaders=FALSE){
     }
     #browser(expr=is.matrix(c))
     c
-  }
-  ))#,optional=TRUE)
+  }))
+#   ,optional=TRUE)
   #browser()
   s
 }

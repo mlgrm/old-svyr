@@ -94,14 +94,16 @@ cleandat <- function(dat,optional=FALSE){
 #' names or indices and return a minisurvey dataframe.
 #'
 cols2minisurvey <- function(dat,colsets,id="QID"){
-#   cns <- colnames(dat[,colsets[[1]]])
-  ldply(colsets,function(cs){
+  #   cns <- colnames(dat[,colsets[[1]]])
+  dat1 <- ldply(colsets,function(cs){
     if(all(is.na(dat[,cs]))) return(NULL)
     dat[,colsets[[1]]] <- dat[,cs]
     dat <- dat[rowSums(!is.na(dat[,cs]))>0,]
     dat[,unlist(colsets[-1])] <- NA
     dat
   })
+  dat1 <- dat1[,-unlist(colsets[-1])]
+  dat1
 }
 
 clean.multi <- function(df,true="Yes"){
