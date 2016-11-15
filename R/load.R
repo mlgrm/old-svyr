@@ -36,32 +36,66 @@ library(jsonlite)
 #' @return an object of class svy inheriting from data.frame, where each column
 #' is an object of class svq of a type appropriate to the question type
 #'
-load.svy <- function(data,form=sub("_[0-9_]+.csv",".json", data),
-                     update.fun=identity, check.names=TRUE,
-                     include.repeats=FALSE){
+load.svy <- function (data, form = sub("_[0-9_]+.csv", ".json", data), update.fun = identity,
+                      check.names = TRUE, include.repeats = FALSE)
+{
   form <- fromJSON(form)
-  dat <- cleandat(read.csv(data,na.strings=c("n/a","NA","","skip"),
-                           check.names=check.names),optional=!check.names)
-#   browser()
+  dat <- cleandat(read.csv(data, na.strings = c("n/a", "NA",
+                                                "", "skip"), check.names = check.names), optional = !check.names)
   dat <- update.fun(dat)
-  dat <- cleandat(dat,optional=!check.names)
+  dat <- cleandat(dat, optional = !check.names)
   names1 <- names(dat)
-  dat <- extract(form$children,dat)
-#   if(!check.names) names(dat) <- names1
-  dat <- as.data.frame(dat, stringsAsFactors=FALSE,optional=!check.names)
-#   colnames(dat) <- sapply(dat,function(c){
-#     lbl <- attributes(c)$label
-#     if(is.null(lbl)) attributes(c)$name else getlabels(c)
-#   })
-  class(dat) <- c("svy",class(dat))
-  attributes(dat) <- c(attributes(dat),form[names(form)!="children"])
-  if(include.repeats){
-    dat <- list(main=dat)
+  dat <- extract(form$children, dat)
+  # quick and dirty fix - remove "svq" class name until after
+  # as.data.frame
+  dat <- lapply(dat, function(e){
+    class(e) <- class(e)[-1]
+    e
+  })
+  dat <- as.data.frame(dat, stringsAsFactors = FALSE, optional = !check.names)
+  # dat <- lapply(dat, function(e){
+  #   class(e) <- c("svq", class(e))
+  #   e
+  # })
+
+  # quick and dirty - get rid of "svy"
+  # class(dat) <- c("svy", class(dat))
+  attributes(dat) <- c(attributes(dat), form[names(form) !=
+                                               "children"])
+  if (include.repeats) {
+    dat <- list(main = dat)
     repeats <- find.repeats(form$children)
-    dat <- c(dat,repeats)
-}
+    dat <- c(dat, repeats)
+  }
   dat
 }
+
+# load.svy <- function(data,form=sub("_[0-9_]+.csv",".json", data),
+#                      update.fun=identity, check.names=TRUE,
+#                      include.repeats=FALSE){
+#   form <- fromJSON(form)
+#   dat <- cleandat(read.csv(data,na.strings=c("n/a","NA","","skip"),
+#                            check.names=check.names),optional=!check.names)
+# #   browser()
+#   dat <- update.fun(dat)
+#   dat <- cleandat(dat,optional=!check.names)
+#   names1 <- names(dat)
+#   dat <- extract(form$children,dat)
+# #   if(!check.names) names(dat) <- names1
+#   dat <- as.data.frame(dat, stringsAsFactors=FALSE,optional=!check.names)
+# #   colnames(dat) <- sapply(dat,function(c){
+# #     lbl <- attributes(c)$label
+# #     if(is.null(lbl)) attributes(c)$name else getlabels(c)
+# #   })
+#   class(dat) <- c("svy",class(dat))
+#   attributes(dat) <- c(attributes(dat),form[names(form)!="children"])
+#   if(include.repeats){
+#     dat <- list(main=dat)
+#     repeats <- find.repeats(form$children)
+#     dat <- c(dat,repeats)
+# }
+#   dat
+# }
 
 loadsvy <- load.svy
 

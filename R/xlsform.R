@@ -1,5 +1,5 @@
 library(xlsx)
-library(RGoogleDocs)
+# library(RGoogleDocs)
 library(plyr)
 
 #' convert a csv "simple survey" file into an xlsForm
